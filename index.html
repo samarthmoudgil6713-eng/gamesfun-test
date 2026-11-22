@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Los Santos Boulevard 3D</title>
+    <meta
+      name="description"
+      content="Explore a golden-hour 3D Los Santos boulevard with procedural PBR textures, drivable traffic, City Mall, and interactive open-world HUD."
+    />
+    <meta property="og:title" content="Los Santos Boulevard 3D" />
+    <meta
+      property="og:description"
+      content="Explore a golden-hour 3D Los Santos boulevard with procedural PBR textures, drivable traffic, City Mall, and interactive open-world HUD."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body data-state="title">
+    <div id="canvas-mount" data-testid="game-canvas-mount" aria-label="3D City Viewport"></div>
+
+    <!-- In-Game HUD (matches reference layout; pointer-events-none wrapper) -->
+    <div id="hud-root" aria-hidden="false">
+      <!-- Top-Left: Minimap + 3-segment bars + Map prompt -->
+      <div class="hud-top-left">
+        <div class="minimap-shell">
+          <div class="minimap-radar-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+              <path
+                d="M12 2L4 5.5V11.5C4 16.5 7.4 20.9 12 22C16.6 20.9 20 16.5 20 11.5V5.5L12 2Z"
+                fill="#1d4ed8"
+                stroke="#ffffff"
+                stroke-width="1.6"
+              />
+              <circle cx="12" cy="11.5" r="3" fill="#ffffff" />
+            </svg>
+          </div>
+          <div class="minimap-compass-n" aria-hidden="true">N</div>
+          <canvas
+            id="minimap-canvas"
+            width="224"
+            height="148"
+            aria-label="City Minimap"
+          ></canvas>
+          <div class="minimap-bars">
+            <div class="bar-track bar-health">
+              <div id="minimap-hp-fill" class="bar-fill" style="width: 100%"></div>
+            </div>
+            <div class="bar-track bar-armor">
+              <div id="minimap-armor-fill" class="bar-fill" style="width: 65%"></div>
+            </div>
+            <div class="bar-track bar-stamina">
+              <div id="minimap-stamina-fill" class="bar-fill" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+        <button id="btn-open-map" class="map-hint-btn" type="button">
+          Press <kbd>M</kbd> to open the map.
+        </button>
+      </div>
+
+      <!-- Top-Right: Cash, Wanted Stars, Active Fist/Action Slot, Utility Icons -->
+      <div class="hud-top-right">
+        <div class="hud-top-right-row">
+          <div class="hud-status-stack">
+            <div id="cash-display" class="cash-display" data-testid="cash-display">$00024517</div>
+            <div id="wanted-stars" class="wanted-stars" aria-label="Wanted level: 0 stars">
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2.2l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.1l-5.9 3.2 1.2-6.6-4.8-4.6 6.6-.9z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2.2l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.1l-5.9 3.2 1.2-6.6-4.8-4.6 6.6-.9z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2.2l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.1l-5.9 3.2 1.2-6.6-4.8-4.6 6.6-.9z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2.2l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.1l-5.9 3.2 1.2-6.6-4.8-4.6 6.6-.9z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 2.2l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.1l-5.9 3.2 1.2-6.6-4.8-4.6 6.6-.9z"/></svg>
+            </div>
+          </div>
+
+          <button
+            id="btn-weapon-slot"
+            class="weapon-slot-btn"
+            type="button"
+            title="Melee Punch [Click / Left Mouse]"
+            aria-label="Active Action: Fist Punch"
+            tabindex="-1"
+          >
+            <svg viewBox="0 0 64 64" width="52" height="52" fill="none">
+              <path
+                d="M17 29C17 24.5 20.5 21 24.5 21C25.4 21 26.2 21.2 27 21.5C27.9 18.8 30.5 17 33.5 17C35 17 36.4 17.5 37.5 18.4C38.7 17.2 40.4 16.5 42.3 16.5C46 16.5 49 19.3 49 23V31.5C51.2 32.7 52.5 35.1 52 37.8C51 43.2 46.8 49 41.2 51.5C35.8 54 27 53.6 22 49.5C17.6 45.8 16 40.5 16 34.5L17 29Z"
+                fill="#ffffff"
+                stroke="#0b0d12"
+                stroke-width="3.6"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M25 22V31M32.5 19V30M40.5 19V30M18 35C22 33 27 33.5 31 36.5C33.5 38.4 36.5 38.5 39.5 36.5"
+                stroke="#0b0d12"
+                stroke-width="3.2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M23 43.5C27.5 47 34.5 47.2 39.5 44.5"
+                stroke="#0b0d12"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="utility-btn-row">
+          <button
+            id="btn-mute"
+            class="utility-icon-btn"
+            type="button"
+            aria-label="Toggle Sound"
+            title="Mute / Unmute [N]"
+            tabindex="-1"
+          >
+            <svg id="icon-sound-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+            <svg id="icon-sound-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          </button>
+          <button id="btn-missions" class="utility-icon-btn" type="button" title="Missions">✦</button>
+          <button id="btn-rooms" class="utility-icon-btn" type="button" title="Multiplayer rooms">◎</button>
+          <button
+            id="btn-pause"
+            class="utility-icon-btn"
+            type="button"
+            aria-label="Pause Game"
+            title="Pause [P / Esc]"
+            tabindex="-1"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <rect x="6" y="5" width="4" height="14" rx="1"></rect>
+              <rect x="14" y="5" width="4" height="14" rx="1"></rect>
+            </svg>
+          </button>
+        </div>
+
+        <div id="speedometer-badge" class="speedometer-badge" hidden>
+          <span id="speed-value">0</span>
+          <span class="speed-unit">KM/H</span>
+        </div>
+      </div>
+
+      <!-- Bottom-Left: Virtual Analog Stick + Health/Heart/Shield/Hunger Vitals -->
+      <div class="hud-bottom-left">
+        <div
+          id="joystick-zone"
+          class="joystick-zone"
+          role="application"
+          aria-label="Movement Analog Stick"
+        >
+          <span class="joy-arrow joy-up" aria-hidden="true">▲</span>
+          <span class="joy-arrow joy-down" aria-hidden="true">▼</span>
+          <span class="joy-arrow joy-left" aria-hidden="true">◀</span>
+          <span class="joy-arrow joy-right" aria-hidden="true">▶</span>
+          <div id="joystick-knob" class="joystick-knob"></div>
+        </div>
+
+        <div class="vitals-row">
+          <div class="vitals-bars-col">
+            <div class="vital-main-bar">
+              <div id="vital-hp-fill" class="vital-main-fill" style="width: 100%"></div>
+            </div>
+            <div class="vital-sub-bars">
+              <div class="vital-sub-track">
+                <div id="vital-armor-fill" class="vital-sub-fill vital-armor" style="width: 65%"></div>
+              </div>
+              <div class="vital-sub-track">
+                <div id="vital-stamina-fill" class="vital-sub-fill vital-stamina" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="vitals-icons">
+            <div class="vital-circle vital-heart" title="Health">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#38bdf8">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </div>
+            <div class="vital-circle vital-shield" title="Armor">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#ffffff">
+                <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/>
+              </svg>
+            </div>
+            <div class="vital-circle vital-energy" title="Stamina & Food">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#ffffff">
+                <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom-Right: Car, Sprint, Jump Circular Action Buttons -->
+      <button id="btn-interact" class="action-circle-btn interact-button" type="button" aria-label="Enter or exit building" title="Enter / Exit">E</button>
+      <div class="hud-bottom-right">
+        <button
+          id="btn-car"
+          class="action-circle-btn"
+          type="button"
+          aria-label="Enter or Exit Vehicle"
+          title="Enter / Exit Vehicle [F]"
+          tabindex="-1"
+        >
+          <svg viewBox="0 0 32 32" width="32" height="32" fill="#ffffff">
+            <path d="M7.5 11.5L10 6.5C10.5 5.6 11.4 5 12.4 5H19.6C20.6 5 21.5 5.6 22 6.5L24.5 11.5C26.2 12 27.5 13.5 27.5 15.3V22.5C27.5 23.3 26.8 24 26 24H24.5V25.5C24.5 26.3 23.8 27 23 27H21C20.2 27 19.5 26.3 19.5 25.5V24H12.5V25.5C12.5 26.3 11.8 27 11 27H9C8.2 27 7.5 26.3 7.5 25.5V24H6C5.2 24 4.5 23.3 4.5 22.5V15.3C4.5 13.5 5.8 12 7.5 11.5ZM10.8 7.6L9.2 11H22.8L21.2 7.6C21 7.2 20.6 7 20.1 7H11.9C11.4 7 11 7.2 10.8 7.6ZM9 18C9.8 18 10.5 17.3 10.5 16.5C10.5 15.7 9.8 15 9 15C8.2 15 7.5 15.7 7.5 16.5C7.5 17.3 8.2 18 9 18ZM23 18C23.8 18 24.5 17.3 24.5 16.5C24.5 15.7 23.8 15 23 15C22.2 15 21.5 15.7 21.5 16.5C21.5 17.3 22.2 18 23 18Z"/>
+          </svg>
+        </button>
+        <button
+          id="btn-sprint"
+          class="action-circle-btn"
+          type="button"
+          aria-label="Toggle Sprint"
+          title="Sprint [Shift]"
+          tabindex="-1"
+        >
+          <svg viewBox="0 0 32 32" width="30" height="30" fill="#ffffff">
+            <circle cx="19" cy="6.5" r="2.7"/>
+            <path d="M16.5 10.5L12.5 12.2L9.5 16.5L11.7 17.9L14.2 14.6L16.3 14L14.3 19.6L9.2 22.8L10.7 25.1L16.6 21.6L19.4 25.5L21.8 24L18.5 18.8L20.1 14.3L22.5 16.5L26 15.3L25.1 12.8L22.4 13.7L18.8 10.4C18.1 9.9 17.2 10.1 16.5 10.5Z"/>
+          </svg>
+        </button>
+        <button
+          id="btn-jump"
+          class="action-circle-btn"
+          type="button"
+          aria-label="Jump"
+          title="Jump [Space]"
+          tabindex="-1"
+        >
+          <svg viewBox="0 0 32 32" width="30" height="30" fill="#ffffff">
+            <circle cx="18.5" cy="6" r="2.6"/>
+            <path d="M11 12.5L15.4 10.5L20 12.3L24 9.5L25.5 11.6L20.4 15.2L17.4 14.1L16.1 18.2L21.5 21.2L20.2 23.6L14.2 20.5L10.3 25.2L8.2 23.5L12.7 18.2L14 14.1L10.5 15.6L7.5 13.5L9 11.4L11 12.5Z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Contextual Interaction Prompt & Toast Banner -->
+      <div id="interaction-prompt" class="interaction-prompt" hidden></div>
+      <div id="toast-banner" class="toast-banner" hidden></div>
+    </div>
+
+    <!-- Title Screen Overlay (Live 3D Scenic Camera Behind) -->
+    <div id="title-overlay" class="title-overlay">
+      <div class="title-card">
+        <svg class="title-emblem" viewBox="0 0 420 124" width="360" height="106" aria-label="Los Santos Boulevard">
+          <defs>
+            <linearGradient id="sunsetGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff4d6" />
+              <stop offset="48%" stop-color="#f9b264" />
+              <stop offset="100%" stop-color="#e36746" />
+            </linearGradient>
+          </defs>
+          <text
+            x="10"
+            y="62"
+            font-family="'Bebas Neue', Impact, sans-serif"
+            font-size="68"
+            letter-spacing="4"
+            fill="url(#sunsetGrad)"
+            stroke="#0d1117"
+            stroke-width="6"
+            paint-order="stroke fill"
+          >LOS SANTOS</text>
+          <text
+            x="14"
+            y="102"
+            font-family="'Plus Jakarta Sans', sans-serif"
+            font-weight="800"
+            font-size="24"
+            letter-spacing="8"
+            fill="#f8fafc"
+            stroke="#0d1117"
+            stroke-width="4"
+            paint-order="stroke fill"
+          >BOULEVARD</text>
+        </svg>
+
+        <button id="btn-start" class="start-btn" data-start="true" type="button">
+          Play Now
+        </button>
+
+        <div class="title-controls-line">
+          WASD Move · Mouse Orbit · Space Jump · Shift Sprint · F Enter Car · M Map · Esc Pause
+        </div>
+      </div>
+    </div>
+
+    <!-- Full City Map Modal (M) -->
+    <dialog id="map-modal" class="game-modal" aria-labelledby="map-modal-title">
+      <div class="modal-surface map-modal-surface">
+        <div class="modal-header">
+          <h2 id="map-modal-title">Los Santos City Map</h2>
+          <button id="btn-close-map" class="modal-close-btn" type="button" aria-label="Close Map">
+            Close [M]
+          </button>
+        </div>
+        <div class="map-toolbar"><span>City overview · scroll to zoom · drag to pan</span><div class="map-zoom-controls"><button id="map-zoom-out" type="button">−</button><button id="map-zoom-reset" type="button">Fit map</button><button id="map-zoom-in" type="button">+</button></div></div><canvas id="fullmap-canvas" width="1000" height="680"></canvas>
+        <div class="map-legend">
+          <span>Click anywhere on the map to place a GPS waypoint</span>
+          <span class="legend-items">
+            <span class="legend-dot dot-player"></span> You
+            <span class="legend-dot dot-mall"></span> City Mall
+            <span class="legend-dot dot-home"></span> Safe House
+            <span class="legend-dot dot-pickup"></span> Street Cash
+          </span>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Los Santos City Mall Modal (E) -->
+    <dialog id="mall-modal" class="game-modal" aria-labelledby="mall-modal-title">
+      <div class="modal-surface mall-modal-surface">
+        <div class="modal-header">
+          <h2 id="mall-modal-title">Los Santos City Mall</h2>
+          <button id="btn-close-mall" class="modal-close-btn" type="button" aria-label="Exit Mall">
+            Exit [Esc]
+          </button>
+        </div>
+        <p class="mall-subtitle">
+          Stock up on gear or clear street heat. Cash: <strong id="mall-cash-readout">$00024517</strong>
+        </p>
+        <div class="mall-grid">
+          <button class="mall-item-btn" data-item="armor" type="button">
+            <span class="mall-item-name">Tactical Kevlar Vest</span>
+            <span class="mall-item-desc">+100 Armor Shield</span>
+            <span class="mall-item-price">$250</span>
+          </button>
+          <button class="mall-item-btn" data-item="meal" type="button">
+            <span class="mall-item-name">Sunset Bistro Combo</span>
+            <span class="mall-item-desc">Restore 100 Health</span>
+            <span class="mall-item-price">$100</span>
+          </button>
+          <button class="mall-item-btn" data-item="sneakers" type="button">
+            <span class="mall-item-name">Pro Runner Sneakers</span>
+            <span class="mall-item-desc">+25% Sprint Speed</span>
+            <span class="mall-item-price">$500</span>
+          </button>
+          <button class="mall-item-btn" data-item="bribe" type="button">
+            <span class="mall-item-name">Clean Slate Pass</span>
+            <span class="mall-item-desc">Clear All Wanted Stars</span>
+            <span class="mall-item-price">$600</span>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="missions-modal" class="game-modal"><div class="modal-surface"><div class="modal-header"><h2>Los Santos Missions</h2><button class="modal-close-btn" id="close-missions" type="button">Close</button></div><p class="mall-subtitle">Choose a job and follow the GPS marker.</p><div class="mission-list"><button class="mission-item" data-mission="courier"><b>01 · Downtown Courier</b><span>Deliver a package to Central Hospital · $1,200</span></button><button class="mission-item" data-mission="rescue"><b>02 · Emergency Response</b><span>Reach LSPD Central · $1,800</span></button><button class="mission-item" data-mission="airport"><b>03 · Airport Transfer</b><span>Reach Los Santos Airport · $2,500</span></button></div><p id="mission-status" class="mission-status">No active mission</p></div></dialog>
+    <dialog id="rooms-modal" class="game-modal"><div class="modal-surface"><div class="modal-header"><h2>Multiplayer Rooms</h2><button class="modal-close-btn" id="close-rooms" type="button">Close</button></div><p class="mall-subtitle">Room presence works between tabs in this browser. Cross-device multiplayer requires a realtime server.</p><div class="room-row"><input id="room-code" maxlength="12" placeholder="Room code"><button id="room-create" class="primary-action-btn" type="button">Create room</button><button id="room-join" class="secondary-action-btn" type="button">Join</button></div><p id="room-status" class="mission-status">Not connected</p></div></dialog>
+    <!-- Pause Modal (Esc / P) -->
+    <dialog id="pause-modal" class="game-modal" aria-labelledby="pause-modal-title">
+      <div class="modal-surface pause-modal-surface">
+        <h2 id="pause-modal-title">Game Paused</h2>
+        <div class="pause-stats">
+          <div class="pause-stat">
+            <span class="stat-label">Cash</span>
+            <span id="pause-cash" class="stat-value">$24,517</span>
+          </div>
+          <div class="pause-stat">
+            <span class="stat-label">Wanted</span>
+            <span id="pause-wanted" class="stat-value">0 ★</span>
+          </div>
+        </div>
+        <div class="pause-actions">
+          <button id="btn-resume" class="primary-action-btn" type="button">Resume</button>
+          <button id="btn-restart" class="secondary-action-btn" type="button">Restart Boulevard</button>
+          <button id="btn-to-title" class="secondary-action-btn" type="button">Title Screen</button>
+        </div>
+        <div class="pause-controls-list">
+          <span>WASD / Joystick: Move or Drive</span>
+          <span>Mouse Drag: Orbit Camera</span>
+          <span>F: Enter / Exit Nearest Car</span>
+          <span>Shift: Sprint · Space: Jump / Drift</span>
+          <span>E: Enter City Mall · M: City Map</span>
+        </div>
+      </div>
+    </dialog>
+
+    <script type="module" src="/game.js"></script>
+  </body>
+</html>
